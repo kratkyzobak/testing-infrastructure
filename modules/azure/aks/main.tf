@@ -36,12 +36,33 @@ resource "azurerm_kubernetes_cluster" "aks" {
   tags = var.tags
 }
 
-resource "azuread_application_federated_identity_credential" "identity_federation" {
-  count                 = length(var.workload_identity_applications)
-  application_object_id = var.workload_identity_applications[count.index].object_id
-  display_name          = "${var.cluster_name}-federation"
-  description           = "${var.cluster_name} federation"
-  audiences             = ["api://AzureADTokenExchange"]
-  issuer                = azurerm_kubernetes_cluster.aks.oidc_issuer_url
-  subject               = "system:serviceaccount:keda:keda-operator"
+# Terraform doesn't support MSI federation, replace this once it does
+resource "azurerm_resource_group_template_deployment" "msi_federation" {
+  name                = "msi_federation"
+  count               = length(var.workload_identity_applications)
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  template_content  = <<TEMPLATE
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "resources": [
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
+            "apiVersion": "2022-01-31-preview",
+            "name": "${var.workload_identity_applications[count.index].name}/${var.cluster_name}-federation",
+            "properties": {
+                "issuer": "${azurerm_kubernetes_cluster.aks.oidc_issuer_url}",
+                "subject": "system:serviceaccount:keda:keda-operator",
+                "audiences": [
+                    "api://AzureADTokenExchange"
+                ]
+            }
+        }
+    ]
+}
+TEMPLATE
+
+  deployment_mode = "Incremental"
 }
