@@ -24,7 +24,6 @@ resource "azurerm_key_vault" "vault" {
   soft_delete_retention_days  = 7
   purge_protection_enabled    = false
   sku_name                    = "standard"
-  access_policy               = []
 
   tags = var.tags
 }
