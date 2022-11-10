@@ -40,11 +40,11 @@ module "azuread_applications" {
 module "azure_aks_pr" {
   source              = "./modules/azure/aks"
   resource_group_name = var.azure_resource_group_name
-  kubernetes_version  = "1.23"
-  cluster_name        = local.pr_cluster_name
+  kubernetes_version  = "1.24"
+  cluster_name        = "keda-pr-run"
 
-  default_node_pool_count         = 3
-  default_node_pool_instance_type = "Standard_B4ms"
+  default_node_pool_count         = 4
+  default_node_pool_instance_type = "Standard_B2ms"
   node_resource_group_name        = null
 
   workload_identity_applications = [
@@ -58,11 +58,11 @@ module "azure_aks_pr" {
 module "azure_aks_nightly" {
   source              = "./modules/azure/aks"
   resource_group_name = var.azure_resource_group_name
-  kubernetes_version  = "1.23"
-  cluster_name        = local.main_cluster_name
+  kubernetes_version  = "1.24"
+  cluster_name        = "keda-nightly-run-3"
 
-  default_node_pool_count         = 3
-  default_node_pool_instance_type = "Standard_B4ms"
+  default_node_pool_count         = 4
+  default_node_pool_instance_type = "Standard_B2ms"
   node_resource_group_name        = null
 
   workload_identity_applications = [
