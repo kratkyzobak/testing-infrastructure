@@ -202,6 +202,16 @@ module "azure_storage_account" {
   tags = local.tags
 }
 
+module "azure_rabbitmq_app_registration" {
+  source              = "./modules/azure/rabbitmq-app-registration"
+  unique_project_name = var.unique_project_name
+
+  rabbitmq_access_identities = [
+    module.azuread_applications.identity_1,
+    module.azuread_applications.identity_2
+  ]
+}
+
 // ====== GITHUB SECRETS ======
 
 module "github_secrets" {
@@ -283,6 +293,14 @@ module "github_secrets" {
     {
       name  = "TF_AZURE_KEYVAULT_URI"
       value = module.azure_key_vault.vault_uri
+    },
+    {
+      name = "TF_AZURE_RABBIT_API_APPLICATION_ID"
+      value = module.azure_rabbitmq_app_registration.application_id
+    },
+    {
+      name = "TF_AZURE_RABBIT_API_APPLICATION_SCOPE_NAME"
+      value = module.azure_rabbitmq_app_registration.application_scope_name
     },
     {
       name  = "TF_AWS_ACCESS_KEY"
